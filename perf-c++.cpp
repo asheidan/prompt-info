@@ -35,6 +35,7 @@ public:
 
 void decorate(const char * const str)
 {
+	std::cout << "\x1B[48;5;34m\x1B[38;5;36m" << str << "\x1B[0m" << std::endl;
 }
 
 void all_colors(TermSize &size)
@@ -58,6 +59,8 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	if (NULL != envvar) {
 		decorate(envvar);
 	}
+
+	all_colors(size);
 
 	return 0;
 }
