@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -68,6 +69,36 @@ std::ostream& operator<<(std::ostream &os, const AttributedString & str)
 		os << "\x1B[0m";
 	}
 
+	return os;
+}
+
+class AttributedText {
+public:
+	void append(AttributedString &s)
+	{
+		strings.push_back(s);
+	}
+	size_t length() const
+	{
+		size_t
+			length = 0;
+
+		std::vector<AttributedString>::const_iterator it;
+		for (it = strings.cbegin(); it < strings.cend(); ++it) {
+			length += it->length();
+		}
+
+		return length;
+	}
+
+	std::vector<AttributedString> strings;
+};
+std::ostream& operator<<(std::ostream &os, const AttributedText & text)
+{
+	std::vector<AttributedString>::const_iterator it;
+	for (it = text.strings.cbegin(); it < text.strings.cend(); ++it) {
+		os << *it;
+	}
 	return os;
 }
 
