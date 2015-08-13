@@ -27,7 +27,7 @@ public:
 		ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
 		cols = ts.ws_col;
 		rows = ts.ws_row;
-		#endif
+#endif
 	}
 
 	int cols;
@@ -43,7 +43,7 @@ public:
 		: content(content), foreground(foreground), background(background), reset(reset)
 	{}
 
-	size_t length()
+	size_t length() const
 	{
 		return content.length();
 	}
@@ -71,11 +71,14 @@ std::ostream& operator<<(std::ostream &os, const AttributedString & str)
 	return os;
 }
 
-void decorate(const char * const str)
+void decorate(const char * const value, const char * const label = NULL)
 {
-	std::cout << AttributedString("[", 219);
-	std::cout << AttributedString(str, 201);
-	std::cout << AttributedString("]", 219, -1, true) << std::endl;
+	std::cout << AttributedString("[", 219, 225);
+	if (NULL != label) {
+		std::cout << label;
+	}
+	std::cout << AttributedString(value, 201);
+	std::cout << AttributedString("]", 219, -1, true) << " ";
 }
 
 void all_colors(TermSize &size)
@@ -87,20 +90,106 @@ void all_colors(TermSize &size)
 			printf("\n");
 		}
 	}
+	printf("\n");
 
+}
+
+std::string shorten_path(const char * const p, const char * const home=NULL)
+{
+	std::string
+		result,
+		path(p);
+	size_t
+		pos = 0,
+		next,
+		length;
+	bool
+		shortened = false;
+
+	if (NULL != home) {
+		if ((pos = path.find(home)) != std::string::npos) {
+			if (0 == pos) {
+				path.replace(0, strlen(home), "~");
+			}
+		}
+	}
+
+	pos = 0;
+
+	while (std::string::npos != (next = path.find("/", pos))) {
+		next = path.find("/", pos);
+
+		length = next - pos;
+		if (4 < length) {
+			length = 3;
+			shortened = true;
+		}
+		else {
+			shortened = false;
+		}
+
+		result.append(path.substr(pos, length));
+		if (shortened) {
+			result.append("…");
+		}
+
+		result.append("/");
+
+		pos = next + 1;
+	}
+	result.append(path.substr(pos, next - pos));
+
+	return result;
+}
+
+std::string format_virtualenv(const char * const venv)
+{
+	std::string virtual_env(venv);
+	size_t pos;
+
+	if (std::string::npos != (pos = virtual_env.rfind("/"))) {
+		return virtual_env.substr(pos + 1);
+	}
+	else {
+		return virtual_env;
+	}
 }
 
 int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
 	TermSize size;
 
 	const char *envvar;
+	std::string home;
+
+	/*
+	envvar = getenv("USER");
+	if (NULL != envvar) {
+		decorate(envvar);
+	}
 
 	envvar = getenv("SHLVL");
 	if (NULL != envvar) {
 		decorate(envvar);
 	}
+	*/
 
-	all_colors(size);
+	envvar = getenv("HOME");
+	if (NULL != envvar) {
+		home = envvar;
+	}
+
+	envvar = getenv("PWD");
+	if (NULL != envvar) {
+		decorate(shorten_path(envvar, home.c_str()).c_str());
+	}
+
+	envvar = getenv("VIRTUAL_ENV");
+	if (NULL != envvar) {
+		decorate(format_virtualenv(envvar).c_str(), "e|");
+	}
+
+	//all_colors(size);
+	std::cout << std::endl;
 
 	return 0;
 }

@@ -1,3 +1,6 @@
-CXXFLAGS = -Wall -Wextra
+CXXFLAGS = -Wall -Wextra -g
+
+default: prompt
 
 test: prompt
+	./$<
