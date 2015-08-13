@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -33,9 +34,48 @@ public:
 	int rows;
 };
 
+typedef int color_t;
+class AttributedString {
+public:
+	AttributedString(const std::string &content,
+					 const color_t foreground = -1, const color_t background = -1,
+					 bool reset=false)
+		: content(content), foreground(foreground), background(background), reset(reset)
+	{}
+
+	size_t length()
+	{
+		return content.length();
+	}
+
+	std::string content;
+	color_t foreground;
+	color_t background;
+	bool reset;
+};
+std::ostream& operator<<(std::ostream &os, const AttributedString & str)
+{
+	if (0x0 <= str.foreground && str.foreground <= 0xFF) {
+		os << "\x1B[38;5;" << str.foreground << "m";
+	}
+	if (0x0 <= str.background && str.background <= 0xFF) {
+		os << "\x1B[48;5;" << str.background << "m";
+	}
+
+	os << str.content;
+
+	if (str.reset) {
+		os << "\x1B[0m";
+	}
+
+	return os;
+}
+
 void decorate(const char * const str)
 {
-	std::cout << "\x1B[48;5;34m\x1B[38;5;36m" << str << "\x1B[0m" << std::endl;
+	std::cout << AttributedString("[", 219);
+	std::cout << AttributedString(str, 201);
+	std::cout << AttributedString("]", 219, -1, true) << std::endl;
 }
 
 void all_colors(TermSize &size)
