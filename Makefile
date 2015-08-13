@@ -1,4 +1,3 @@
 CXXFLAGS = -Wall -Wextra
 
-test: perf-c++
-	time ./$<
+test: prompt
