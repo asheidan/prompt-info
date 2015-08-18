@@ -19,6 +19,24 @@ int print_git_error(int error)
 
 void show_branch(git_repository * const repo)
 {
+	int error = 0;
+	const char *branch = NULL;
+	git_reference *head = NULL;
+
+	error = git_repository_head(&head, repo);
+	if (GIT_EUNBORNBRANCH == error || GIT_ENOTFOUND == error) {
+		branch = NULL;
+	}
+	else if (!error) {
+		branch = git_reference_shorthand(head);
+	}
+	else {
+		print_git_error(error);
+	}
+
+	fprintf(stderr, "Branch: %s\n", branch ? branch : "HEAD (no branch)");
+
+	git_reference_free(head);
 }
 
 void show_status(git_repository * const repo)
