@@ -8,6 +8,7 @@
 #include <git2/strarray.h>
 #include <git2/status.h>
 
+// https://libgit2.github.com/libgit2/ex/HEAD/status.html
 
 int print_git_error(int error)
 {
@@ -34,7 +35,7 @@ void show_branch(git_repository * const repo)
 		print_git_error(error);
 	}
 
-	fprintf(stderr, "Branch: %s\n", branch ? branch : "HEAD (no branch)");
+	fprintf(stdout, "%s", branch ? branch : "(no branch)");
 
 	git_reference_free(head);
 }
@@ -44,6 +45,12 @@ void show_status(git_repository * const repo)
 	int error;
 	git_status_list *status = NULL;
 	git_status_options statusopt = GIT_STATUS_OPTIONS_INIT;
+	size_t status_count = 0;
+	const git_status_entry *s;
+	unsigned int repo_status = 0u;
+	char istatus, wstatus;
+
+
 
 	statusopt.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
 	statusopt.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED;
@@ -52,6 +59,62 @@ void show_status(git_repository * const repo)
 	if (0 > error) {
 		print_git_error(error);
 	}
+
+	status_count = git_status_list_entrycount(status);
+
+	for (size_t i = 0; i < status_count; ++i) {
+		s = git_status_byindex(status, i);
+
+		if (GIT_STATUS_CURRENT == s->status) {
+			continue;
+		}
+
+		repo_status |= s->status;
+	}
+
+	istatus = wstatus = ' ';
+
+	if (repo_status & GIT_STATUS_INDEX_NEW) {
+		istatus = 'A';
+	}
+	if (repo_status & GIT_STATUS_INDEX_MODIFIED) {
+		istatus = 'M';
+	}
+	if (repo_status & GIT_STATUS_INDEX_DELETED) {
+		istatus = 'D';
+	}
+	if (repo_status & GIT_STATUS_INDEX_RENAMED) {
+		istatus = 'R';
+	}
+	if (repo_status & GIT_STATUS_INDEX_TYPECHANGE) {
+		istatus = 'T';
+	}
+
+
+	if (repo_status & GIT_STATUS_WT_NEW) {
+		if (istatus == ' ')
+			istatus = '?';
+		wstatus = '?';
+	}
+	if (repo_status & GIT_STATUS_WT_MODIFIED) {
+		wstatus = 'M';
+	}
+	if (repo_status & GIT_STATUS_WT_DELETED) {
+		wstatus = 'D';
+	}
+	if (repo_status & GIT_STATUS_WT_RENAMED) {
+		wstatus = 'R';
+	}
+	if (repo_status & GIT_STATUS_WT_TYPECHANGE) {
+		wstatus = 'T';
+	}
+
+	if (repo_status & GIT_STATUS_IGNORED) {
+		istatus = '!';
+		wstatus = '!';
+	}
+
+	fprintf(stdout, ":%c%c", istatus, wstatus);
 
 	if (NULL != status) {
 		git_status_list_free(status);
@@ -86,7 +149,7 @@ int main(int argc, char **argv)
 		return error;
 	}
 	else {
-		fprintf(stderr, "We are in a git repo\n");
+		//fprintf(stderr, "We are in a git repo\n");
 	}
 
 	show_branch(repo);
@@ -97,7 +160,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "%s: Cannot get status on bare repository\n", argv[0]);
 	}
 	else if (NULL != repo) {
-		fprintf(stderr, "Repo workdir: %s\n", git_repository_workdir(repo));
+		//fprintf(stderr, "Repo workdir: %s\n", git_repository_workdir(repo));
 	}
 
 
@@ -106,6 +169,8 @@ int main(int argc, char **argv)
 	}
 
 	while(0 < git_libgit2_shutdown()) {};
+
+	fprintf(stdout, "\n");
 
 	return 0;
 }
