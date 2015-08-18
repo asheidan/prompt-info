@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
+#include "AttributedBlock.hpp"
+#include "AttributedString.hpp"
+
 // green: \x1B[32m
 /**
  * 256color:
@@ -35,81 +38,26 @@ public:
 	int rows;
 };
 
-typedef int color_t;
-class AttributedString {
-public:
-	AttributedString(const std::string &content,
-					 const color_t foreground = -1, const color_t background = -1,
-					 bool reset=false)
-		: content(content), foreground(foreground), background(background), reset(reset)
-	{}
 
-	size_t length() const
-	{
-		return content.length();
-	}
 
-	std::string content;
-	color_t foreground;
-	color_t background;
-	bool reset;
-};
-std::ostream& operator<<(std::ostream &os, const AttributedString & str)
+AttributedString decorate(const char * const value, const char * const label = NULL)
 {
-	if (0x0 <= str.foreground && str.foreground <= 0xFF) {
-		os << "\x1B[38;5;" << str.foreground << "m";
-	}
-	if (0x0 <= str.background && str.background <= 0xFF) {
-		os << "\x1B[48;5;" << str.background << "m";
-	}
+	AttributedString result;
+	AttributedBlock block;
 
-	os << str.content;
-
-	if (str.reset) {
-		os << "\x1B[0m";
-	}
-
-	return os;
-}
-
-class AttributedText {
-public:
-	void append(AttributedString &s)
-	{
-		strings.push_back(s);
-	}
-	size_t length() const
-	{
-		size_t
-			length = 0;
-
-		std::vector<AttributedString>::const_iterator it;
-		for (it = strings.cbegin(); it < strings.cend(); ++it) {
-			length += it->length();
-		}
-
-		return length;
-	}
-
-	std::vector<AttributedString> strings;
-};
-std::ostream& operator<<(std::ostream &os, const AttributedText & text)
-{
-	std::vector<AttributedString>::const_iterator it;
-	for (it = text.strings.cbegin(); it < text.strings.cend(); ++it) {
-		os << *it;
-	}
-	return os;
-}
-
-void decorate(const char * const value, const char * const label = NULL)
-{
-	std::cout << AttributedString("[", 219, 225);
+	block =  AttributedBlock("[", 219);
+	result.append(block);
 	if (NULL != label) {
-		std::cout << label;
+		block = AttributedBlock(label);
+		result.append(block);
 	}
-	std::cout << AttributedString(value, 201);
-	std::cout << AttributedString("]", 219, -1, true) << " ";
+	block = AttributedBlock(value, 201);
+	result.append(block);
+
+	block = AttributedBlock("]", 219);
+	result.append(block);
+
+	return result;
 }
 
 void all_colors(TermSize &size)
@@ -192,6 +140,10 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	const char *envvar;
 	std::string home;
 
+	std::vector<AttributedString> left;
+
+	std::cout << AttributedBlock("", -1, 225);
+
 	/*
 	envvar = getenv("USER");
 	if (NULL != envvar) {
@@ -211,7 +163,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 
 	envvar = getenv("PWD");
 	if (NULL != envvar) {
-		decorate(shorten_path(envvar, home.c_str()).c_str());
+		std::cout << decorate(shorten_path(envvar, home.c_str()).c_str());
 	}
 
 	envvar = getenv("VIRTUAL_ENV");
@@ -220,6 +172,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	}
 
 	//all_colors(size);
+
 	std::cout << std::endl;
 
 	return 0;
