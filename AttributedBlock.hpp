@@ -1,6 +1,9 @@
 #ifndef __ATTRIBUTED_BLOCK_HPP__
 #define __ATTRIBUTED_BLOCK_HPP__
 
+#include <ostream>
+#include <string>
+
 typedef int color_t;
 class AttributedBlock {
 public:

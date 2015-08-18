@@ -2,6 +2,7 @@
 #define __ATTRIBUTED_STRING_HPP__
 
 #include <vector>
+#include <ostream>
 
 #include "AttributedBlock.hpp"
 
