@@ -40,21 +40,39 @@ public:
 
 
 
+AttributedString decorate_path(const char * const value)
+{
+	AttributedString result;
+	AttributedBlock block;
+
+	block =  AttributedBlock("[", 70);
+	result.append(block);
+	block = AttributedBlock(value, 255);
+	result.append(block);
+
+	block = AttributedBlock("]", 70);
+	result.append(block);
+
+	return result;
+}
+
 AttributedString decorate(const char * const value, const char * const label = NULL)
 {
 	AttributedString result;
 	AttributedBlock block;
 
-	block =  AttributedBlock("[", 219);
+	block =  AttributedBlock("[", 70);
 	result.append(block);
 	if (NULL != label) {
-		block = AttributedBlock(label);
+		block = AttributedBlock(label, 70);
+		result.append(block);
+		block = AttributedBlock("|", 70);
 		result.append(block);
 	}
-	block = AttributedBlock(value, 201);
+	block = AttributedBlock(value, 76);
 	result.append(block);
 
-	block = AttributedBlock("]", 219);
+	block = AttributedBlock("]", 70);
 	result.append(block);
 
 	return result;
@@ -142,7 +160,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 
 	std::vector<AttributedString> left;
 
-	std::cout << AttributedBlock("", -1, 225);
+	std::cout << AttributedBlock("", -1, 64);
 
 	/*
 	envvar = getenv("USER");
@@ -163,17 +181,26 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 
 	envvar = getenv("PWD");
 	if (NULL != envvar) {
-		std::cout << decorate(shorten_path(envvar, home.c_str()).c_str());
+		left.push_back(decorate_path(shorten_path(envvar, home.c_str()).c_str()));
 	}
 
 	envvar = getenv("VIRTUAL_ENV");
 	if (NULL != envvar) {
-		decorate(format_virtualenv(envvar).c_str(), "e|");
+		left.push_back(decorate(format_virtualenv(envvar).c_str(), "e"));
 	}
 
 	//all_colors(size);
 
-	std::cout << std::endl;
+	std::vector<AttributedString>::const_iterator it = left.cbegin();
+	if (it < left.cend()) {
+		std::cout << *it;
+	}
+	for (++it; it < left.cend(); ++it) {
+		std::cout << " ";
+		std::cout << *it;
+	}
+
+	std::cout << "\x1B[0m" << std::endl;
 
 	return 0;
 }

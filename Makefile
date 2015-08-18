@@ -1,7 +1,7 @@
 CPPFLAGS = -Ilibgit2-0.23.1/include
 CXXFLAGS = -Wall -Wextra -g -Llibgit2-0.23.1/build -lgit2
 
-TARGET = git_status
+TARGET = prompt
 
 default: $(TARGET)
 
