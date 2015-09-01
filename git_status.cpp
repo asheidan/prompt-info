@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <stdio.h>
 
 #include <git2/diff.h>
@@ -18,11 +19,12 @@ int print_git_error(int error)
 	return error;
 }
 
-void show_branch(git_repository * const repo)
+std::string show_branch(git_repository * const repo)
 {
 	int error = 0;
 	const char *branch = NULL;
 	git_reference *head = NULL;
+	std::string result;
 
 	error = git_repository_head(&head, repo);
 	if (GIT_EUNBORNBRANCH == error || GIT_ENOTFOUND == error) {
@@ -35,12 +37,20 @@ void show_branch(git_repository * const repo)
 		print_git_error(error);
 	}
 
-	fprintf(stdout, "%s", branch ? branch : "(no branch)");
+	if (branch) {
+		result = branch;
+	}
+	else {
+		result = "(no branch)";
+	}
+	//fprintf(stdout, "%s", branch ? branch : "(no branch)");
 
 	git_reference_free(head);
+
+	return result;
 }
 
-void show_status(git_repository * const repo)
+std::string show_status(git_repository * const repo)
 {
 	int error;
 	git_status_list *status = NULL;
@@ -49,6 +59,7 @@ void show_status(git_repository * const repo)
 	const git_status_entry *s;
 	unsigned int repo_status = 0u;
 	char istatus, wstatus;
+	std::string result = ":  ";
 
 
 
@@ -92,8 +103,9 @@ void show_status(git_repository * const repo)
 
 
 	if (repo_status & GIT_STATUS_WT_NEW) {
-		if (istatus == ' ')
+		if (istatus == ' ') {
 			istatus = '?';
+		}
 		wstatus = '?';
 	}
 	if (repo_status & GIT_STATUS_WT_MODIFIED) {
@@ -114,11 +126,14 @@ void show_status(git_repository * const repo)
 		wstatus = '!';
 	}
 
-	fprintf(stdout, ":%c%c", istatus, wstatus);
+	result.replace(1,1,1, istatus);
+	result.replace(2,1,1, wstatus);
 
 	if (NULL != status) {
 		git_status_list_free(status);
 	}
+
+	return result;
 }
 
 int main(int argc, char **argv)
@@ -152,9 +167,9 @@ int main(int argc, char **argv)
 		//fprintf(stderr, "We are in a git repo\n");
 	}
 
-	show_branch(repo);
+	std::cout << show_branch(repo);
 	// TODO: Submodules
-	show_status(repo);
+	std::cout << show_status(repo);
 
 	if (git_repository_is_bare(repo)) {
 		fprintf(stderr, "%s: Cannot get status on bare repository\n", argv[0]);
@@ -162,7 +177,6 @@ int main(int argc, char **argv)
 	else if (NULL != repo) {
 		//fprintf(stderr, "Repo workdir: %s\n", git_repository_workdir(repo));
 	}
-
 
 	if (NULL != repo) {
 		git_repository_free(repo);
