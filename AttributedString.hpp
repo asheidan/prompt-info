@@ -38,4 +38,18 @@ std::ostream& operator<<(std::ostream &os, const AttributedString & text)
 	return os;
 }
 
+std::ostream& operator<<(std::ostream &os, const std::vector<AttributedString> & strings)
+{
+	std::vector<AttributedString>::const_iterator it = strings.cbegin();
+
+	if (it < strings.cend()) {
+		os << *it;
+	}
+	for (++it; it < strings.cend(); ++it) {
+		os << " ";
+		os << *it;
+	}
+
+	return os;
+}
 #endif
