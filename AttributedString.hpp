@@ -52,4 +52,19 @@ std::ostream& operator<<(std::ostream &os, const std::vector<AttributedString> &
 
 	return os;
 }
+
+size_t length(std::vector<AttributedString> &v)
+{
+	size_t result = 0;
+	std::vector<AttributedString>::const_iterator it = v.cbegin();
+
+	if (it < v.cend()) {
+		result += it->length();
+	}
+	for (++it; it < v.cend(); ++it) {
+		result += it->length() + 1;
+	}
+
+	return result;
+}
 #endif

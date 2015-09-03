@@ -10,6 +10,13 @@
 #include "AttributedBlock.hpp"
 #include "AttributedString.hpp"
 
+const unsigned char PromptInsertColorBackground = 64;
+const unsigned char PromptInsertColorBracket = 70;
+const unsigned char PromptInsertColorSeparator = 70;
+const unsigned char PromptInsertColorLabel = 70;
+const unsigned char PromptInsertColorInformation = 76;
+const unsigned char PromptInsertColorHost = 82;
+
 // green: \x1B[32m
 /**
  * 256color:
@@ -39,13 +46,12 @@ public:
 };
 
 
-
 AttributedString decorate_path(const char * const value)
 {
 	AttributedString result;
 	AttributedBlock block;
 
-	block =  AttributedBlock("[", 70);
+	block = AttributedBlock("[", 70);
 	result.append(block);
 	block = AttributedBlock(value, 255);
 	result.append(block);
@@ -56,23 +62,52 @@ AttributedString decorate_path(const char * const value)
 	return result;
 }
 
+AttributedString decorate_git(const char * const branch = NULL, const char * status = NULL) {
+	AttributedString result;
+	AttributedBlock block;
+
+	return result;
+}
+
+AttributedString decorate_user_host(const char * const user, const char * const host)
+{
+	AttributedString result;
+	AttributedBlock block;
+
+	block = AttributedBlock("[", PromptInsertColorBracket);
+	result.append(block);
+
+	block = AttributedBlock(user, PromptInsertColorInformation);
+	result.append(block);
+
+	block = AttributedBlock("@", PromptInsertColorSeparator);
+	result.append(block);
+
+	block = AttributedBlock(host, PromptInsertColorHost);
+	result.append(block);
+
+	block = AttributedBlock("]", PromptInsertColorBracket);
+	result.append(block);
+
+	return result;
+}
 AttributedString decorate(const char * const value, const char * const label = NULL)
 {
 	AttributedString result;
 	AttributedBlock block;
 
-	block =  AttributedBlock("[", 70);
+	block = AttributedBlock("[", PromptInsertColorBracket);
 	result.append(block);
 	if (NULL != label) {
-		block = AttributedBlock(label, 70);
+		block = AttributedBlock(label, PromptInsertColorLabel);
 		result.append(block);
-		block = AttributedBlock("|", 70);
+		block = AttributedBlock("|", PromptInsertColorSeparator);
 		result.append(block);
 	}
-	block = AttributedBlock(value, 76);
+	block = AttributedBlock(value, PromptInsertColorInformation);
 	result.append(block);
 
-	block = AttributedBlock("]", 70);
+	block = AttributedBlock("]", PromptInsertColorBracket);
 	result.append(block);
 
 	return result;
@@ -127,7 +162,7 @@ std::string shorten_path(const char * const p, const char * const home=NULL)
 
 		result.append(path.substr(pos, length));
 		if (shortened) {
-			result.append("…");
+			result.append("~");
 		}
 
 		result.append("/");
@@ -135,6 +170,23 @@ std::string shorten_path(const char * const p, const char * const home=NULL)
 		pos = next + 1;
 	}
 	result.append(path.substr(pos, next - pos));
+
+	return result;
+}
+
+std::string hostname()
+{
+	char hostname[256];
+	char *p = hostname;
+
+	std::string result;
+
+	gethostname(hostname, 256);
+
+	for (; *p != '.' && *p != '\0' && p < (hostname + 256); ++p) {}
+	*p = '\0';
+
+	result = hostname;
 
 	return result;
 }
@@ -156,20 +208,21 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	TermSize size;
 
 	const char *envvar;
+
 	std::string home;
 
-	std::vector<AttributedString> left;
+	std::vector<AttributedString>
+		left, right;
 
-	std::cout << AttributedBlock("", -1, 64);
-
-	/*
 	envvar = getenv("USER");
 	if (NULL != envvar) {
-		decorate(envvar);
+		right.push_back(decorate_user_host(envvar, hostname().c_str()));
 	}
 
+	/*
 	envvar = getenv("SHLVL");
 	if (NULL != envvar) {
+
 		decorate(envvar);
 	}
 	*/
@@ -191,15 +244,19 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 
 	//all_colors(size);
 
-	std::vector<AttributedString>::const_iterator it = left.cbegin();
-	if (it < left.cend()) {
-		std::cout << *it;
-	}
-	for (++it; it < left.cend(); ++it) {
-		std::cout << " ";
-		std::cout << *it;
+	//std::cout << "cols: " << size.cols << std::endl;
+	//std::cout << "left: " << length(left) << std::endl;
+	//std::cout << "right: " << length(right) << std::endl;
+
+	std::cout << AttributedBlock("", -1, PromptInsertColorBackground);
+
+	std::cout << left;
+
+	for (size_t i = size.cols - length(left) - length(right); i > 0; --i) {
+		std::cout << " "; // i % 10;
 	}
 
+	std::cout << right;
 	std::cout << "\x1B[0m" << std::endl;
 
 	return 0;
