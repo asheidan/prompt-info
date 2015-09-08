@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <vector>
 
 #include <unistd.h>
@@ -34,7 +35,7 @@ public:
 		cols = ts.ts_cols;
 		rows = ts.ts_lines;
 #elif defined(TIOCGWINSZ)
-		struct winsize &ts;
+		struct winsize ts;
 		ioctl(STDIN_FILENO, TIOCGWINSZ, &ts);
 		cols = ts.ws_col;
 		rows = ts.ws_row;
