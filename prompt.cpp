@@ -205,6 +205,22 @@ std::string format_virtualenv(const char * const venv)
 	}
 }
 
+std::string format_java_home(const char * const java_var)
+{
+	std::string java_home(java_var);
+	size_t pos;
+
+	if (std::string::npos != (pos = java_home.rfind(".jdk/Contents/Home"))) {
+		java_home.replace(java_home.begin() += pos, java_home.end(), "");
+	}
+
+	if (std::string::npos != (pos = java_home.rfind("/"))) {
+		java_home.replace(java_home.begin(), java_home.begin() += pos + 4, "");
+	}
+
+	return java_home;
+}
+
 int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
 	TermSize size;
 
@@ -242,6 +258,12 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	if (NULL != envvar) {
 		left.push_back(decorate(format_virtualenv(envvar).c_str(), "e"));
 	}
+
+	envvar = getenv("JAVA_HOME");
+	if (NULL != envvar) {
+		left.push_back(decorate(format_java_home(envvar).c_str(), "j"));
+	}
+
 
 	//all_colors(size);
 
