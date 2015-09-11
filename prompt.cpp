@@ -8,6 +8,10 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 
+#ifdef LIBGIT2_AVAILABLE
+#include "git_status.hpp"
+#endif
+
 #include "AttributedBlock.hpp"
 #include "AttributedString.hpp"
 
@@ -18,6 +22,7 @@ typedef struct {
 	unsigned char separator;
 	unsigned char label;
 	unsigned char information;
+	unsigned char suffix;
 	unsigned char host;
 } ColorScheme;
 
@@ -27,6 +32,7 @@ const ColorScheme InsertScheme = {
 	.separator = 70,
 	.label = 70,
 	.information = 76,
+	.suffix = 70,
 	.host = 82
 };
 
@@ -75,13 +81,6 @@ AttributedString decorate_path(const char * const value)
 	return result;
 }
 
-AttributedString decorate_git(const char * const branch = NULL, const char * status = NULL) {
-	AttributedString result;
-	AttributedBlock block;
-
-	return result;
-}
-
 AttributedString decorate_user_host(const char * const user, const char * const host)
 {
 	AttributedString result;
@@ -104,7 +103,10 @@ AttributedString decorate_user_host(const char * const user, const char * const 
 
 	return result;
 }
-AttributedString decorate(const char * const value, const char * const label = NULL)
+
+AttributedString decorate(const char * const value,
+						  const char * const label = NULL,
+						  const char * const suffix = NULL)
 {
 	AttributedString result;
 	AttributedBlock block;
@@ -119,6 +121,14 @@ AttributedString decorate(const char * const value, const char * const label = N
 	}
 	block = AttributedBlock(value, InsertScheme.information);
 	result.append(block);
+
+	if (NULL != suffix) {
+		block = AttributedBlock("|", InsertScheme.separator);
+		result.append(block);
+
+		block = AttributedBlock(suffix, InsertScheme.suffix);
+		result.append(block);
+	}
 
 	block = AttributedBlock("]", InsertScheme.bracket);
 	result.append(block);
@@ -265,6 +275,17 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	if (NULL != envvar) {
 		left.push_back(decorate_path(shorten_path(envvar, home.c_str()).c_str()));
 	}
+
+#ifdef LIBGIT2_AVAILABLE
+	try {
+		GitRepo repo(envvar);
+
+		left.push_back(decorate(repo.branch().c_str(), "g", repo.status().c_str()));
+	}
+	catch(std::exception& e) {
+		//std::cout << e.what() << std::endl;
+	}
+#endif
 
 	envvar = getenv("VIRTUAL_ENV");
 	if (NULL != envvar) {
