@@ -15,7 +15,13 @@ env.Append(CCFLAGS="-g")
 env.Append(LIBPATH="/usr/local/lib")
 env.Append(CPPPATH="/usr/local/include")
 
-if not env.GetOption('clean'):
+FEATURES = {
+    "git": False,
+}
+
+if env.GetOption('clean'):
+    FEATURES["git"] = True
+else:
     conf = Configure(env)
 
     if not conf.CheckLibWithHeader('git2', 'git2.h', 'c'):
@@ -23,12 +29,14 @@ if not env.GetOption('clean'):
         #Exit(1)
     else:
         conf.env.Append(CPPDEFINES="-DLIBGIT2_AVAILABLE")
+        FEATURES["git"] = True
 
     env = conf.Finish()
 
-objects = env.Object('prompt.cpp')
+objects = [env.Object('prompt.cpp')]
 
-#git_status = env.Program('git_status.cpp')
+if FEATURES["git"]:
+    objects.append(env.Object('git_status.cpp'))
 
 target = env.Program('prompt-info', objects)
 
