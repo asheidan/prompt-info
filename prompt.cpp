@@ -11,12 +11,24 @@
 #include "AttributedBlock.hpp"
 #include "AttributedString.hpp"
 
-const unsigned char PromptInsertColorBackground = 64;
-const unsigned char PromptInsertColorBracket = 70;
-const unsigned char PromptInsertColorSeparator = 70;
-const unsigned char PromptInsertColorLabel = 70;
-const unsigned char PromptInsertColorInformation = 76;
-const unsigned char PromptInsertColorHost = 82;
+
+typedef struct {
+	unsigned char background;
+	unsigned char bracket;
+	unsigned char separator;
+	unsigned char label;
+	unsigned char information;
+	unsigned char host;
+} ColorScheme;
+
+const ColorScheme InsertScheme = {
+	.background = 64,
+	.bracket = 70,
+	.separator = 70,
+	.label = 70,
+	.information = 76,
+	.host = 82
+};
 
 // green: \x1B[32m
 /**
@@ -75,19 +87,19 @@ AttributedString decorate_user_host(const char * const user, const char * const 
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", PromptInsertColorBracket);
+	block = AttributedBlock("[", InsertScheme.bracket);
 	result.append(block);
 
-	block = AttributedBlock(user, PromptInsertColorInformation);
+	block = AttributedBlock(user, InsertScheme.information);
 	result.append(block);
 
-	block = AttributedBlock("@", PromptInsertColorSeparator);
+	block = AttributedBlock("@", InsertScheme.separator);
 	result.append(block);
 
-	block = AttributedBlock(host, PromptInsertColorHost);
+	block = AttributedBlock(host, InsertScheme.host);
 	result.append(block);
 
-	block = AttributedBlock("]", PromptInsertColorBracket);
+	block = AttributedBlock("]", InsertScheme.bracket);
 	result.append(block);
 
 	return result;
@@ -97,18 +109,18 @@ AttributedString decorate(const char * const value, const char * const label = N
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", PromptInsertColorBracket);
+	block = AttributedBlock("[", InsertScheme.bracket);
 	result.append(block);
 	if (NULL != label) {
-		block = AttributedBlock(label, PromptInsertColorLabel);
+		block = AttributedBlock(label, InsertScheme.label);
 		result.append(block);
-		block = AttributedBlock("|", PromptInsertColorSeparator);
+		block = AttributedBlock("|", InsertScheme.separator);
 		result.append(block);
 	}
-	block = AttributedBlock(value, PromptInsertColorInformation);
+	block = AttributedBlock(value, InsertScheme.information);
 	result.append(block);
 
-	block = AttributedBlock("]", PromptInsertColorBracket);
+	block = AttributedBlock("]", InsertScheme.bracket);
 	result.append(block);
 
 	return result;
@@ -271,7 +283,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	//std::cout << "left: " << length(left) << std::endl;
 	//std::cout << "right: " << length(right) << std::endl;
 
-	std::cout << AttributedBlock("", -1, PromptInsertColorBackground);
+	std::cout << AttributedBlock("", -1, InsertScheme.background);
 
 	std::cout << left;
 
