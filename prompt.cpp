@@ -36,6 +36,18 @@ const ColorScheme InsertScheme = {
 	.host = 82
 };
 
+const ColorScheme NormalScheme = {
+	.background = 25,
+	.bracket = 31,
+	.separator = 31,
+	.label = 31,
+	.information = 37,
+	.suffix = 31,
+	.host = 43
+};
+
+const ColorScheme *CurrentScheme = &InsertScheme;
+
 // green: \x1B[32m
 /**
  * 256color:
@@ -86,19 +98,19 @@ AttributedString decorate_user_host(const char * const user, const char * const 
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", InsertScheme.bracket);
+	block = AttributedBlock("[", CurrentScheme->bracket);
 	result.append(block);
 
-	block = AttributedBlock(user, InsertScheme.information);
+	block = AttributedBlock(user, CurrentScheme->information);
 	result.append(block);
 
-	block = AttributedBlock("@", InsertScheme.separator);
+	block = AttributedBlock("@", CurrentScheme->separator);
 	result.append(block);
 
-	block = AttributedBlock(host, InsertScheme.host);
+	block = AttributedBlock(host, CurrentScheme->host);
 	result.append(block);
 
-	block = AttributedBlock("]", InsertScheme.bracket);
+	block = AttributedBlock("]", CurrentScheme->bracket);
 	result.append(block);
 
 	return result;
@@ -111,26 +123,26 @@ AttributedString decorate(const char * const value,
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", InsertScheme.bracket);
+	block = AttributedBlock("[", CurrentScheme->bracket);
 	result.append(block);
 	if (NULL != label) {
-		block = AttributedBlock(label, InsertScheme.label);
+		block = AttributedBlock(label, CurrentScheme->label);
 		result.append(block);
-		block = AttributedBlock("|", InsertScheme.separator);
+		block = AttributedBlock("|", CurrentScheme->separator);
 		result.append(block);
 	}
-	block = AttributedBlock(value, InsertScheme.information);
+	block = AttributedBlock(value, CurrentScheme->information);
 	result.append(block);
 
 	if (NULL != suffix) {
-		block = AttributedBlock("|", InsertScheme.separator);
+		block = AttributedBlock("|", CurrentScheme->separator);
 		result.append(block);
 
-		block = AttributedBlock(suffix, InsertScheme.suffix);
+		block = AttributedBlock(suffix, CurrentScheme->suffix);
 		result.append(block);
 	}
 
-	block = AttributedBlock("]", InsertScheme.bracket);
+	block = AttributedBlock("]", CurrentScheme->bracket);
 	result.append(block);
 
 	return result;
@@ -243,7 +255,7 @@ std::string format_java_home(const char * const java_var)
 	return java_home;
 }
 
-int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) {
+int main(int argc, char **argv) {
 	TermSize size;
 
 	const char *envvar;
@@ -252,6 +264,15 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 
 	std::vector<AttributedString>
 		left, right;
+
+	if (1 < argc) {
+		if ('n' == argv[1][0]) {
+			CurrentScheme = &NormalScheme;
+		}
+		else if ('i' == argv[1][0]) {
+			CurrentScheme = &InsertScheme;
+		}
+	}
 
 	envvar = getenv("USER");
 	if (NULL != envvar) {
@@ -304,7 +325,7 @@ int main(__attribute__((unused)) int argc, __attribute__((unused)) char **argv) 
 	//std::cout << "left: " << length(left) << std::endl;
 	//std::cout << "right: " << length(right) << std::endl;
 
-	std::cout << AttributedBlock("", -1, InsertScheme.background);
+	std::cout << AttributedBlock("", -1, CurrentScheme->background);
 
 	std::cout << left;
 
