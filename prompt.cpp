@@ -24,6 +24,7 @@ typedef struct {
 	unsigned char information;
 	unsigned char suffix;
 	unsigned char host;
+	unsigned char path;
 } ColorScheme;
 
 const ColorScheme InsertScheme = {
@@ -32,8 +33,9 @@ const ColorScheme InsertScheme = {
 	.separator = 70,
 	.label = 70,
 	.information = 76,
-	.suffix = 70,
-	.host = 82
+	.suffix = 76,
+	.host = 82,
+	.path = 255
 };
 
 const ColorScheme NormalScheme = {
@@ -42,8 +44,9 @@ const ColorScheme NormalScheme = {
 	.separator = 31,
 	.label = 31,
 	.information = 37,
-	.suffix = 31,
-	.host = 43
+	.suffix = 37,
+	.host = 43,
+	.path = 255
 };
 
 const ColorScheme *CurrentScheme = &InsertScheme;
@@ -70,6 +73,14 @@ public:
 		cols = ts.ws_col;
 		rows = ts.ws_row;
 #endif
+
+		if (0 >= cols) {
+			cols = 80;
+		}
+
+		if (0 >= rows) {
+			rows = 24;
+		}
 	}
 
 	int cols;
@@ -82,12 +93,12 @@ AttributedString decorate_path(const char * const value)
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", 70);
+	block = AttributedBlock("[", CurrentScheme->bracket);
 	result.append(block);
-	block = AttributedBlock(value, 255);
+	block = AttributedBlock(value, CurrentScheme->path);
 	result.append(block);
 
-	block = AttributedBlock("]", 70);
+	block = AttributedBlock("]", CurrentScheme->bracket);
 	result.append(block);
 
 	return result;
@@ -255,6 +266,20 @@ std::string format_java_home(const char * const java_var)
 	return java_home;
 }
 
+std::string format_docker_host(const char * const url)
+{
+	std::string docker_host(url);
+	size_t pos;
+
+	docker_host.replace(docker_host.begin(), docker_host.begin() + 6, "");
+
+	if (std::string::npos != (pos = docker_host.rfind(":"))) {
+		docker_host.replace(docker_host.begin() + pos, docker_host.end(), "");
+	}
+
+	return docker_host;
+}
+
 int main(int argc, char **argv) {
 	TermSize size;
 
@@ -267,6 +292,9 @@ int main(int argc, char **argv) {
 
 	if (1 < argc) {
 		if ('n' == argv[1][0]) {
+			CurrentScheme = &NormalScheme;
+		}
+		else if ('c' == argv[1][0]) {
 			CurrentScheme = &NormalScheme;
 		}
 		else if ('i' == argv[1][0]) {
@@ -301,7 +329,12 @@ int main(int argc, char **argv) {
 	try {
 		GitRepo repo(envvar);
 
-		left.push_back(decorate(repo.branch().c_str(), "g", repo.status().c_str()));
+		std::string branchname = repo.branch();
+		if ("feature/" == branchname.substr(0, 8)) {
+			branchname.replace(0, 8, "f~/");
+		}
+
+		left.push_back(decorate(branchname.c_str(), "g", repo.status().c_str()));
 	}
 	catch(std::exception& e) {
 		//std::cout << e.what() << std::endl;
@@ -318,6 +351,10 @@ int main(int argc, char **argv) {
 		left.push_back(decorate(format_java_home(envvar).c_str(), "j"));
 	}
 
+	envvar = getenv("DOCKER_HOST");
+	if (NULL != envvar) {
+		left.push_back(decorate(format_docker_host(envvar).c_str(), "d"));
+	}
 
 	//all_colors(size);
 
@@ -329,12 +366,15 @@ int main(int argc, char **argv) {
 
 	std::cout << left;
 
-	for (size_t i = size.cols - length(left) - length(right); i > 0; --i) {
-		std::cout << " "; // i % 10;
-	}
+	std::cout << " ";
+	//for (int i = size.cols - length(left) - length(right) - 1; i > 0; --i) {
+	//	std::cout << " "; // i % 10;
+	//}
 
 	std::cout << right;
-	std::cout << "\x1B[0m" << std::endl;
+	//std::cout << "%{\x1B[0m%}" << std::endl;
+	// Bash uses %L, Zsh uses %E to erase to end of line
+	std::cout << "%E" << "%{\x1B[0m%}" << std::endl;
 
 	return 0;
 }
