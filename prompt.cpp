@@ -266,6 +266,20 @@ std::string format_java_home(const char * const java_var)
 	return java_home;
 }
 
+std::string format_docker_host(const char * const url)
+{
+	std::string docker_host(url);
+	size_t pos;
+
+	docker_host.replace(docker_host.begin(), docker_host.begin() + 6, "");
+
+	if (std::string::npos != (pos = docker_host.rfind(":"))) {
+		docker_host.replace(docker_host.begin() + pos, docker_host.end(), "");
+	}
+
+	return docker_host;
+}
+
 int main(int argc, char **argv) {
 	TermSize size;
 
@@ -337,6 +351,10 @@ int main(int argc, char **argv) {
 		left.push_back(decorate(format_java_home(envvar).c_str(), "j"));
 	}
 
+	envvar = getenv("DOCKER_HOST");
+	if (NULL != envvar) {
+		left.push_back(decorate(format_docker_host(envvar).c_str(), "d"));
+	}
 
 	//all_colors(size);
 
