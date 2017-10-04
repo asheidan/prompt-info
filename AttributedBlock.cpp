@@ -14,7 +14,7 @@ AttributedBlock::AttributedBlock(const std::string &content,
 
 std::ostream& AttributedBlockZSHRenderer(std::ostream &os, const AttributedBlock & str)
 {
-	bool has_attribute = str.foreground != 0x0 || str.background != 0x0;
+	bool has_attribute = str.foreground >= 0x0 || str.background >= 0x0;
 
 	if (has_attribute) {
 		os << "%{";
@@ -48,7 +48,28 @@ std::ostream& AttributedBlockAnsi256ColorRenderer(std::ostream &os, const Attrib
 	return os;
 }
 
+std::ostream& AttributedBlockAnsi16ColorRenderer(std::ostream &os, const AttributedBlock & str)
+{
+	bool has_attribute = str.foreground >= 0x0 || str.background >= 0x0;
+	if (has_attribute) {
+		os << "\x1B[";
+
+		if (000 <= str.foreground && str.foreground <= 020) {
+			os << ((010 & str.foreground) >> 3);
+			os << ';' << (07 & str.foreground) + 30;
+		}
+		if (000 <= str.background && str.background <= 007) {
+			os << ';' << (07 & str.foreground) + 40;
+		}
+		os << 'm';
+	}
+
+	os << str.content;
+
+	return os;
+}
+
 std::ostream& operator<<(std::ostream &os, const AttributedBlock & str)
 {
-	return (AttributedBlockZSHRenderer)(os, str);
+	return (AttributedBlockAnsi16ColorRenderer)(os, str);
 }

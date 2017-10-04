@@ -93,13 +93,13 @@ AttributedString decorate_path(const char * const value)
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", CurrentScheme->bracket);
-	result.append(block);
-	block = AttributedBlock(value, CurrentScheme->path);
+	//block = AttributedBlock("[", CurrentScheme->bracket);
+	//result.append(block);
+	block = AttributedBlock(value, 12);
 	result.append(block);
 
-	block = AttributedBlock("]", CurrentScheme->bracket);
-	result.append(block);
+	//block = AttributedBlock("]", CurrentScheme->bracket);
+	//result.append(block);
 
 	return result;
 }
@@ -127,33 +127,12 @@ AttributedString decorate_user_host(const char * const user, const char * const 
 	return result;
 }
 
-AttributedString decorate(const char * const value,
-						  const char * const label = NULL,
-						  const char * const suffix = NULL)
+AttributedString decorate(const char * const value, int color)
 {
 	AttributedString result;
 	AttributedBlock block;
 
-	block = AttributedBlock("[", CurrentScheme->bracket);
-	result.append(block);
-	if (NULL != label) {
-		block = AttributedBlock(label, CurrentScheme->label);
-		result.append(block);
-		block = AttributedBlock("|", CurrentScheme->separator);
-		result.append(block);
-	}
-	block = AttributedBlock(value, CurrentScheme->information);
-	result.append(block);
-
-	if (NULL != suffix) {
-		block = AttributedBlock("|", CurrentScheme->separator);
-		result.append(block);
-
-		block = AttributedBlock(suffix, CurrentScheme->suffix);
-		result.append(block);
-	}
-
-	block = AttributedBlock("]", CurrentScheme->bracket);
+	block = AttributedBlock(value, color);
 	result.append(block);
 
 	return result;
@@ -281,15 +260,16 @@ std::string format_docker_host(const char * const url)
 }
 
 int main(int argc, char **argv) {
-	TermSize size;
+	//TermSize size;
 
 	const char *envvar;
 
 	std::string home;
 
 	std::vector<AttributedString>
-		left, right;
+		left;
 
+	/*
 	if (1 < argc) {
 		if ('n' == argv[1][0]) {
 			CurrentScheme = &NormalScheme;
@@ -301,19 +281,19 @@ int main(int argc, char **argv) {
 			CurrentScheme = &InsertScheme;
 		}
 	}
+	*/
 
 	envvar = getenv("USER");
 	if (NULL != envvar) {
-		right.push_back(decorate_user_host(envvar, hostname().c_str()));
+		const char *logname;
+		logname = getenv("LOGNAME");
+		if (NULL != logname) {
+			if (0 != strcmp(envvar, logname)) {
+				left.push_back(decorate(envvar, 9));
+				left.push_back(decorate("in", 8));
+			}
+		}
 	}
-
-	/*
-	envvar = getenv("SHLVL");
-	if (NULL != envvar) {
-
-		decorate(envvar);
-	}
-	*/
 
 	envvar = getenv("HOME");
 	if (NULL != envvar) {
@@ -322,7 +302,7 @@ int main(int argc, char **argv) {
 
 	envvar = getenv("PWD");
 	if (NULL != envvar) {
-		left.push_back(decorate_path(shorten_path(envvar, home.c_str()).c_str()));
+		left.push_back(decorate(shorten_path(envvar, home.c_str()).c_str(), 12));
 	}
 
 #ifdef LIBGIT2_AVAILABLE
@@ -333,14 +313,25 @@ int main(int argc, char **argv) {
 		if ("feature/" == branchname.substr(0, 8)) {
 			branchname.replace(0, 8, "f~/");
 		}
+		if ("hotfix/" == branchname.substr(0, 7)) {
+			branchname.replace(0, 7, "h~/");
+		}
 
-		left.push_back(decorate(branchname.c_str(), "g", repo.status().c_str()));
+		left.push_back(decorate("on", 8));
+		left.push_back(decorate(branchname.c_str(), 13));
+		std::string status = repo.status();
+		if (0 != status.compare("  ")) {
+			status.insert(0, "[");
+			status.append("]");
+			left.push_back(decorate(status.c_str(), 9));
+		}
 	}
 	catch(std::exception& e) {
 		//std::cout << e.what() << std::endl;
 	}
 #endif
 
+	/*
 	envvar = getenv("VIRTUAL_ENV");
 	if (NULL != envvar) {
 		left.push_back(decorate(format_virtualenv(envvar).c_str(), "e"));
@@ -355,26 +346,21 @@ int main(int argc, char **argv) {
 	if (NULL != envvar) {
 		left.push_back(decorate(format_docker_host(envvar).c_str(), "d"));
 	}
+	*/
+
+	envvar = getenv("SSH_CONNECTION");
+	if (NULL != envvar && '\0' != *envvar) {
+		left.push_back(decorate("@", 8));
+		left.push_back(decorate(hostname().c_str(), 8));
+	}
 
 	//all_colors(size);
 
-	//std::cout << "cols: " << size.cols << std::endl;
-	//std::cout << "left: " << length(left) << std::endl;
-	//std::cout << "right: " << length(right) << std::endl;
-
-	std::cout << AttributedBlock("", -1, CurrentScheme->background);
-
 	std::cout << left;
 
-	std::cout << " ";
-	//for (int i = size.cols - length(left) - length(right) - 1; i > 0; --i) {
-	//	std::cout << " "; // i % 10;
-	//}
-
-	std::cout << right;
-	//std::cout << "%{\x1B[0m%}" << std::endl;
 	// Bash uses %L, Zsh uses %E to erase to end of line
-	std::cout << "%E" << "%{\x1B[0m%}" << std::endl;
+
+	std::cout << "\x1B[K\x1B[0m" << std::endl;
 
 	return 0;
 }

@@ -5,6 +5,7 @@
 #include <string>
 
 typedef enum {
+	AttributedBlockRenderAnsi16Color,
 	AttributedBlockRenderAnsi256Color,
 	AttributedBlockRenderZSH
 } AttributedBlockRenderType;
