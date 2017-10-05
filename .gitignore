@@ -30,3 +30,11 @@
 # Backup files
 *~
 \#*\#
+
+# Debug symbol files
+*.dSYM/
+
+# SCons files
+.sconf_temp/
+.sconsign.dblite
+config.log
