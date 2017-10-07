@@ -194,7 +194,8 @@ GitRepo::~GitRepo()
 std::string GitRepo::workdir() const
 {
 	if (this->is_bare) {
-		return std::string();
+		const char *repository_p = git_repository_path(this->repo);
+		return std::string(repository_p);
 	}
 	else {
 		const char *workdir_p = git_repository_workdir(this->repo);
