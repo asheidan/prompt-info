@@ -8,9 +8,9 @@
 
 class AttributedString {
 public:
-	void append(AttributedBlock &s)
+	void append(AttributedBlock &b)
 	{
-		blocks.push_back(s);
+		blocks.push_back(b);
 	}
 
 	size_t length() const

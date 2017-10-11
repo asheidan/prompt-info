@@ -267,7 +267,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	std::string home;
 
 	std::vector<AttributedString>
-		left;
+		tools;
 
 	/*
 	if (1 < argc) {
@@ -289,8 +289,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		logname = getenv("LOGNAME");
 		if (NULL != logname) {
 			if (0 != strcmp(envvar, logname)) {
-				left.push_back(decorate(envvar, 9));
-				left.push_back(decorate("in", 8));
+				std::cout << decorate(envvar, 9) << " " << decorate("in", 8) << " ";
 			}
 		}
 	}
@@ -302,7 +301,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 
 	envvar = getenv("PWD");
 	if (NULL != envvar) {
-		left.push_back(decorate(shorten_path(envvar, home.c_str()).c_str(), 12));
+		std::cout << decorate(shorten_path(envvar, home.c_str()).c_str(), 12);
 	}
 
 #ifdef LIBGIT2_AVAILABLE
@@ -317,13 +316,13 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 			branchname.replace(0, 7, "h~/");
 		}
 
-		left.push_back(decorate("on", 8));
-		left.push_back(decorate(branchname.c_str(), 13));
+		std::cout << " " << decorate("on", 8);
+		std::cout << " " << decorate(branchname.c_str(), 13);
 		std::string status = repo.status();
 		if (0 != status.compare("  ")) {
 			status.insert(0, "[");
 			status.append("]");
-			left.push_back(decorate(status.c_str(), 9));
+			std::cout << " " << decorate(status.c_str(), 9);
 		}
 	}
 	catch(std::exception& e) {
@@ -342,31 +341,47 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		block = AttributedBlock(format_virtualenv(envvar).c_str(), 10);
 		venv_info.append(block);
 
-		left.push_back(decorate("using", 8));
-		left.push_back(venv_info);
+		tools.push_back(venv_info);
+	}
+
+	envvar = getenv("JAVA_HOME");
+	if (NULL != envvar) {
+		AttributedString java_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("java:", 2);
+		java_info.append(block);
+
+		block = AttributedBlock(format_java_home(envvar).c_str(), 10);
+		java_info.append(block);
+
+		tools.push_back(java_info);
 	}
 
 	/*
-	envvar = getenv("JAVA_HOME");
-	if (NULL != envvar) {
-		left.push_back(decorate(format_java_home(envvar).c_str(), "j"));
-	}
-
 	envvar = getenv("DOCKER_HOST");
 	if (NULL != envvar) {
 		left.push_back(decorate(format_docker_host(envvar).c_str(), "d"));
 	}
 	*/
 
+	if (tools.size() > 0) {
+		AttributedBlock separator(",", 8);
+
+		std::cout << " " << decorate("using", 8) << " ";
+		std::vector<AttributedString>::const_iterator it = tools.begin();
+		std::cout << *it;
+		for (++it; it < tools.end(); ++it) {
+			std::cout << separator << *it;
+		}
+	}
+
 	envvar = getenv("SSH_CONNECTION");
 	if (NULL != envvar && '\0' != *envvar) {
-		left.push_back(decorate("@", 8));
-		left.push_back(decorate(hostname().c_str(), 8));
+		std::cout << " " << decorate("@", 8) << " " << decorate(hostname().c_str(), 8);
 	}
 
 	//all_colors(size);
-
-	std::cout << left;
 
 	// Bash uses %L, Zsh uses %E to erase to end of line
 
