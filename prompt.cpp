@@ -331,12 +331,22 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	}
 #endif
 
-	/*
 	envvar = getenv("VIRTUAL_ENV");
 	if (NULL != envvar) {
-		left.push_back(decorate(format_virtualenv(envvar).c_str(), "e"));
+		AttributedString venv_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("py:", 2);
+		venv_info.append(block);
+
+		block = AttributedBlock(format_virtualenv(envvar).c_str(), 10);
+		venv_info.append(block);
+
+		left.push_back(decorate("using", 8));
+		left.push_back(venv_info);
 	}
 
+	/*
 	envvar = getenv("JAVA_HOME");
 	if (NULL != envvar) {
 		left.push_back(decorate(format_java_home(envvar).c_str(), "j"));
