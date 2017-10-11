@@ -283,12 +283,21 @@ int main(int argc, char **argv) {
 	}
 	*/
 
+	// TODO: Check the variable SUDO_USER
 	envvar = getenv("USER");
 	if (NULL != envvar) {
 		const char *logname;
 		logname = getenv("LOGNAME");
 		if (NULL != logname) {
 			if (0 != strcmp(envvar, logname)) {
+				left.push_back(decorate(envvar, 9));
+				left.push_back(decorate("in", 8));
+			}
+		}
+		const char *sudo_user;
+		sudo_user = getenv("SUDO_USER");
+		if (NULL != sudo_user) {
+			if (0 != strcmp(envvar, sudo_user)) {
 				left.push_back(decorate(envvar, 9));
 				left.push_back(decorate("in", 8));
 			}
