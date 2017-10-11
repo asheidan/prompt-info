@@ -33,11 +33,9 @@ else:
 
         if conf.CheckFunc('git_libgit2_init', '#include <git2/global.h>', 'c'):
             conf.env.Append(CPPDEFINES="-DLIBGIT2_GLOBAL_INIT")
-            print("Found git_libgit2_init")
 
         if conf.CheckFunc('git_threads_init', '#include <git2/threads.h>', 'c'):
             conf.env.Append(CPPDEFINES="-DLIBGIT2_THREADS_INIT")
-            print("Found git_threads_init")
     else:
         print("Could not find libgit2, no git-features.")
 

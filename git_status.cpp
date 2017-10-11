@@ -4,10 +4,10 @@
 
 #include <git2/diff.h>
 #include <git2/errors.h>
-#ifdef LIBGIT_THREADS_INIT
+#ifdef LIBGIT2_THREADS_INIT
 # include <git2/threads.h>
 #endif
-#ifdef LIBGIT_GLOBAL_INIT
+#ifdef LIBGIT2_GLOBAL_INIT
 # include <git2/global.h>
 #endif
 #include <git2/strarray.h>
@@ -144,14 +144,14 @@ GitRepo::GitRepo(const char * const path) :
 {
 	int error;
 
-#ifdef LIBGIT_GLOBAL_INIT
+#ifdef LIBGIT2_GLOBAL_INIT
 	error = git_libgit2_init();
 	if (1 < error) {
 		const git_error *e = giterr_last();
 		throw GitInitializationException(e->message);
 	}
 #endif
-#ifdef LIBGIT_THREADS_INIT
+#ifdef LIBGIT2_THREADS_INIT
 	error = git_threads_init();
 	if (1 < error) {
 		const git_error *e = giterr_last();
@@ -183,10 +183,10 @@ GitRepo::~GitRepo()
 		git_repository_free(repo);
 	}
 
-#ifdef LIBGIT_THREADS_INIT
+#ifdef LIBGIT2_THREADS_INIT
 	git_threads_shutdown();
 #endif
-#ifdef LIBGIT_GLOBAL_INIT
+#ifdef LIBGIT2_GLOBAL_INIT
 	while(0 < git_libgit2_shutdown()) {};
 #endif
 }

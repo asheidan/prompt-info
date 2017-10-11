@@ -259,7 +259,7 @@ std::string format_docker_host(const char * const url)
 	return docker_host;
 }
 
-int main(int argc, char **argv) {
+int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) {
 	//TermSize size;
 
 	const char *envvar;
