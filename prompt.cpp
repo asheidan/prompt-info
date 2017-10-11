@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 
 #ifdef LIBGIT2_AVAILABLE
 #include "git_status.hpp"
@@ -86,6 +87,35 @@ public:
 	int cols;
 	int rows;
 };
+
+std::string find_walk_upwards(std::string &path, const char *filename) {
+	std::string
+		current_path = path,
+		file_path;
+	struct stat
+		stat_buffer;
+	int
+		pos;
+
+	file_path = current_path;
+	file_path.append("/");
+	file_path.append(filename);
+
+	if (0 == stat(file_path.c_str(), &stat_buffer)) {
+		return file_path;
+	}
+
+	while (std::string::npos != (pos = current_path.rfind("/"))) {
+		current_path = current_path.substr(0, pos);
+		file_path = current_path;
+		file_path.append("/");
+		file_path.append(filename);
+		if (0 == stat(file_path.c_str(), &stat_buffer)) {
+			return file_path;
+		}
+	}
+	return std::string("");
+}
 
 
 AttributedString decorate_path(const char * const value)
