@@ -97,15 +97,7 @@ std::string find_walk_upwards(std::string &path, const char *filename) {
 	int
 		pos;
 
-	file_path = current_path;
-	file_path.append("/");
-	file_path.append(filename);
-
-	if (0 == stat(file_path.c_str(), &stat_buffer)) {
-		return file_path;
-	}
-
-	while (std::string::npos != (pos = current_path.rfind("/"))) {
+	for (pos = current_path.length(); std::string::npos != pos; pos = current_path.rfind("/")) {
 		current_path = current_path.substr(0, pos);
 		file_path = current_path;
 		file_path.append("/");
@@ -295,6 +287,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	const char *envvar;
 
 	std::string home;
+	std::string path;
 
 	std::vector<AttributedString>
 		tools;
@@ -332,6 +325,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	envvar = getenv("PWD");
 	if (NULL != envvar) {
 		std::cout << decorate(shorten_path(envvar, home.c_str()).c_str(), 12);
+		path = envvar;
 	}
 
 #ifdef LIBGIT2_AVAILABLE
@@ -365,7 +359,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		AttributedString venv_info;
 		AttributedBlock block;
 
-		block = AttributedBlock("py:", 2);
+		block = AttributedBlock("venv:", 2);
 		venv_info.append(block);
 
 		block = AttributedBlock(format_virtualenv(envvar).c_str(), 10);
@@ -386,6 +380,50 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		java_info.append(block);
 
 		tools.push_back(java_info);
+	}
+
+	std::string cargo_path = find_walk_upwards(path, "Cargo.toml");
+	if (cargo_path.length()) {
+		AttributedString rust_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("rust:", 2);
+		rust_info.append(block);
+
+		tools.push_back(rust_info);
+	}
+
+	std::string make_path = find_walk_upwards(path, "Makefile");
+	if (make_path.length()) {
+		AttributedString make_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("make", 4);
+		make_info.append(block);
+
+		tools.push_back(make_info);
+	}
+
+	std::string scons_path = find_walk_upwards(path, "SConstruct");
+	if (scons_path.length()) {
+		AttributedString scons_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("scons", 4);
+		scons_info.append(block);
+
+		tools.push_back(scons_info);
+	}
+
+	std::string vagrant_path = find_walk_upwards(path, "Vagrantfile");
+	if (vagrant_path.length()) {
+		AttributedString vagrant_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("[v]", 12);
+		vagrant_info.append(block);
+
+		tools.push_back(vagrant_info);
 	}
 
 	/*
