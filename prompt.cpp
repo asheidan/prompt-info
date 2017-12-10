@@ -290,7 +290,7 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	std::string path;
 
 	std::vector<AttributedString>
-		tools;
+		environment, tools;
 
 	/*
 	if (1 < argc) {
@@ -306,6 +306,116 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	}
 	*/
 
+	// Environment variables that affect the behaviour of tools
+	envvar = getenv("KUBECTL_CONTEXT");
+	std::string kube_context;
+	if (envvar) {
+		kube_context = std::string(envvar);
+	}
+	envvar = getenv("KUBECTL_NAMESPACE");
+	std::string kube_namespace;
+	if (envvar) {
+		kube_namespace = std::string(envvar);
+	}
+	if (kube_context.length() or kube_namespace.length()) {
+		AttributedString k8s_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("k8s:", 6);
+		k8s_info.append(block);
+
+		if (kube_context.length()) {
+			block = AttributedBlock(kube_context.c_str(), 14);
+			k8s_info.append(block);
+		}
+		if (kube_namespace.length()) {
+			block = AttributedBlock("[", 6);
+			k8s_info.append(block);
+
+			block = AttributedBlock(kube_namespace.c_str(), 14);
+			k8s_info.append(block);
+
+			block = AttributedBlock("]", 6);
+			k8s_info.append(block);
+		}
+		environment.push_back(k8s_info);
+	}
+
+	envvar = getenv("DOCKER_CERT_PATH");
+	if (NULL != envvar) {
+		std::string cert_path(envvar);
+		if (std::string::npos != cert_path.find(".minikube")) {
+			// We have probably set docker to use minikube
+			AttributedString docker_info;
+			AttributedBlock block;
+
+			block = AttributedBlock("docker:", 4);
+			docker_info.append(block);
+
+			block = AttributedBlock("minikube", 12);
+			docker_info.append(block);
+
+			environment.push_back(docker_info);
+		}
+	}
+
+	// TODO: Add check for http(s)_proxy
+	envvar = getenv("https_proxy");
+	std::string https_proxy;
+	if (NULL != envvar) {
+		https_proxy = std::string(envvar);
+	}
+	envvar = getenv("http_proxy");
+	std::string http_proxy;
+	if (NULL != envvar) {
+		http_proxy = std::string(envvar);
+	}
+	if (http_proxy.length() or https_proxy.length()) {
+		if (http_proxy == https_proxy) {
+			AttributedString proxy_info;
+			AttributedBlock block;
+
+			block = AttributedBlock("http/https:", 3);
+			proxy_info.append(block);
+
+			block = AttributedBlock(http_proxy, 11);
+			proxy_info.append(block);
+
+			environment.push_back(proxy_info);
+		}
+		else {
+			if (http_proxy.length()) {
+				AttributedString proxy_info;
+				AttributedBlock block;
+
+				block = AttributedBlock("http:", 3);
+				proxy_info.append(block);
+
+				block = AttributedBlock(http_proxy, 11);
+				proxy_info.append(block);
+
+				environment.push_back(proxy_info);
+			}
+			if (https_proxy.length()) {
+				AttributedString proxy_info;
+				AttributedBlock block;
+
+				block = AttributedBlock("https:", 3);
+				proxy_info.append(block);
+
+				block = AttributedBlock(https_proxy, 11);
+				proxy_info.append(block);
+
+				environment.push_back(proxy_info);
+			}
+		}
+	}
+
+	if (environment.size() > 0) {
+		std::cout << environment << std::endl;
+	}
+
+	// General settings
 	envvar = getenv("USER");
 	if (NULL != envvar) {
 		const char *logname;
