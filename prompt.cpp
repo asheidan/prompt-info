@@ -17,48 +17,6 @@
 #include "AttributedString.hpp"
 
 
-typedef struct {
-	unsigned char background;
-	unsigned char bracket;
-	unsigned char separator;
-	unsigned char label;
-	unsigned char information;
-	unsigned char suffix;
-	unsigned char host;
-	unsigned char path;
-} ColorScheme;
-
-const ColorScheme InsertScheme = {
-	.background = 64,
-	.bracket = 70,
-	.separator = 70,
-	.label = 70,
-	.information = 76,
-	.suffix = 76,
-	.host = 82,
-	.path = 255
-};
-
-const ColorScheme NormalScheme = {
-	.background = 25,
-	.bracket = 31,
-	.separator = 31,
-	.label = 31,
-	.information = 37,
-	.suffix = 37,
-	.host = 43,
-	.path = 255
-};
-
-const ColorScheme *CurrentScheme = &InsertScheme;
-
-// green: \x1B[32m
-/**
- * 256color:
- * FG: \x1B[38;5;%dm
- * BG: \x1B[48;5;%dm
- */
-
 class TermSize {
 public:
 	TermSize() : cols(80), rows(24)
@@ -122,29 +80,6 @@ AttributedString decorate_path(const char * const value)
 
 	//block = AttributedBlock("]", CurrentScheme->bracket);
 	//result.append(block);
-
-	return result;
-}
-
-AttributedString decorate_user_host(const char * const user, const char * const host)
-{
-	AttributedString result;
-	AttributedBlock block;
-
-	block = AttributedBlock("[", CurrentScheme->bracket);
-	result.append(block);
-
-	block = AttributedBlock(user, CurrentScheme->information);
-	result.append(block);
-
-	block = AttributedBlock("@", CurrentScheme->separator);
-	result.append(block);
-
-	block = AttributedBlock(host, CurrentScheme->host);
-	result.append(block);
-
-	block = AttributedBlock("]", CurrentScheme->bracket);
-	result.append(block);
 
 	return result;
 }
@@ -535,13 +470,6 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 
 		tools.push_back(vagrant_info);
 	}
-
-	/*
-	envvar = getenv("DOCKER_HOST");
-	if (NULL != envvar) {
-		left.push_back(decorate(format_docker_host(envvar).c_str(), "d"));
-	}
-	*/
 
 	if (tools.size() > 0) {
 		AttributedBlock separator(",", 8);
