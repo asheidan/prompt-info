@@ -17,7 +17,7 @@
 
 int print_git_error(int error)
 {
-	const git_error *e = giterr_last();
+	const git_error *e = git_error_last();
 	fprintf(stderr, "Error: %d/%d: %s\n", error, e->klass, e->message);
 
 	return error;
@@ -147,14 +147,14 @@ GitRepo::GitRepo(const char * const path) :
 #ifdef LIBGIT2_GLOBAL_INIT
 	error = git_libgit2_init();
 	if (1 < error) {
-		const git_error *e = giterr_last();
+		const git_error *e = git_error_last();
 		throw GitInitializationException(e->message);
 	}
 #endif
 #ifdef LIBGIT2_THREADS_INIT
 	error = git_threads_init();
 	if (1 < error) {
-		const git_error *e = giterr_last();
+		const git_error *e = git_error_last();
 		throw GitInitializationException(e->message);
 	}
 #endif
@@ -165,7 +165,7 @@ GitRepo::GitRepo(const char * const path) :
 			throw GitInitializationException("Could not find repo");
 		}
 		else {
-			const git_error *e = giterr_last();
+			const git_error *e = git_error_last();
 			throw GitInitializationException(e->message);
 		}
 	}
