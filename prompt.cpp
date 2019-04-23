@@ -353,11 +353,16 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	// General settings
 	envvar = getenv("USER");
 	if (NULL != envvar) {
-		const char *logname;
-		logname = getenv("LOGNAME");
-		if (NULL != logname) {
-			if (0 != strcmp(envvar, logname)) {
-				std::cout << decorate(envvar, 9) << " " << decorate("in", 8) << " ";
+		if (0 == strcmp(envvar, "root")) {
+			std::cout << decorate(envvar, 9) << " " << decorate("in", 8) << " ";
+		}
+		else {
+			const char *logname;
+			logname = getenv("LOGNAME");
+			if (NULL != logname) {
+				if (0 != strcmp(envvar, logname)) {
+					std::cout << decorate(envvar, 9) << " " << decorate("in", 8) << " ";
+				}
 			}
 		}
 	}
