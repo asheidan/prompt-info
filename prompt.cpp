@@ -454,6 +454,17 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		tools.push_back(make_info);
 	}
 
+	std::string gradle_path = find_walk_upwards(path, "build.gradle");
+	if (gradle_path.length()) {
+		AttributedString gradle_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("gradle", 4);
+		gradle_info.append(block);
+
+		tools.push_back(gradle_info);
+	}
+
 	std::string scons_path = find_walk_upwards(path, "SConstruct");
 	if (scons_path.length()) {
 		AttributedString scons_info;
