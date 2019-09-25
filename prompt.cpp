@@ -504,6 +504,11 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	}
 
 	//all_colors(size);
+	envvar = getenv("SHLVL");
+	if (NULL != envvar && strtol(envvar, NULL, 10) > 1) {
+		std::cout << decorate(" lvl ", 15) << decorate(envvar, 15);
+	}
+
 
 	// Bash uses %L, Zsh uses %E to erase to end of line
 
