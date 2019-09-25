@@ -52,7 +52,7 @@ std::string find_walk_upwards(std::string &path, const char *filename) {
 		file_path;
 	struct stat
 		stat_buffer;
-	int
+	size_t
 		pos;
 
 	for (pos = current_path.length(); std::string::npos != pos; pos = current_path.rfind("/")) {
@@ -196,7 +196,7 @@ std::string format_java_home(const char * const java_var)
 	}
 
 	if (std::string::npos != (pos = java_home.rfind("/"))) {
-		java_home.replace(java_home.begin(), java_home.begin() += pos + 4, "");
+		java_home.replace(java_home.begin(), java_home.begin() += pos + 1, "");
 	}
 
 	return java_home;
