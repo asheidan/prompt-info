@@ -58,13 +58,21 @@ std::string GitRepo::status() const
 {
 	int error;
 	git_status_list *status = NULL;
-	git_status_options statusopt = GIT_STATUS_OPTIONS_INIT;
+	git_status_options statusopt = {
+		.version = GIT_STATUS_OPTIONS_VERSION,
+		.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR,
+		.flags= GIT_STATUS_OPT_INCLUDE_UNTRACKED,
+	};
 	size_t status_count = 0;
 	const git_status_entry *s;
 	unsigned int repo_status = 0u;
 	char istatus, wstatus;
 	std::string result = "  ";
 	// TODO: Submodules
+
+	if (this->is_bare) {
+		return "bare";
+	}
 
 	statusopt.show = GIT_STATUS_SHOW_INDEX_AND_WORKDIR;
 	statusopt.flags = GIT_STATUS_OPT_INCLUDE_UNTRACKED;
