@@ -1,0 +1,3 @@
+{
+    "C_Cpp.clang_format_fallbackStyle": "{BasedOnStyle: WebKit, UseTab: Always, IndentWidth: 4, TabWidth: 4, AllowShortBlocksOnASingleLine: Empty, BreakBeforeBraces: Stroustrup}"
+}
