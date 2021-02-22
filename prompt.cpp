@@ -52,7 +52,7 @@ std::string find_walk_upwards(std::string &path, const char *filename) {
 		file_path;
 	struct stat
 		stat_buffer;
-	int
+	size_t
 		pos;
 
 	for (pos = current_path.length(); std::string::npos != pos; pos = current_path.rfind("/")) {
@@ -270,6 +270,28 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 		environment.push_back(aws_info);
 
 	}
+
+	envvar = getenv("DIGITALOCEAN_CONTEXT");
+	std::string do_context;
+	if (envvar) {
+		do_context = std::string(envvar);
+	}
+	if (do_context.length()) {
+		AttributedString do_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("do:", 3);
+		do_info.append(block);
+
+		if (do_context.length()) {
+			block = AttributedBlock(do_context.c_str(), 9);
+			do_info.append(block);
+		}
+
+		environment.push_back(do_info);
+
+	}
+
 	envvar = getenv("KUBECTL_CONTEXT");
 	std::string kube_context;
 	if (envvar) {
