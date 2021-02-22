@@ -242,6 +242,34 @@ int main(int argc __attribute__((unused)), char **argv __attribute__((unused))) 
 	*/
 
 	// Environment variables that affect the behaviour of tools
+
+	envvar = getenv("AWS_PROFILE");
+	std::string aws_profile;
+	if (envvar) {
+		aws_profile = std::string(envvar);
+	}
+	if (aws_profile.length()) {
+		AttributedString aws_info;
+		AttributedBlock block;
+
+		block = AttributedBlock("aws:", 3);
+		aws_info.append(block);
+
+		if (aws_profile.length()) {
+			block = AttributedBlock(aws_profile.c_str(), 9);
+			aws_info.append(block);
+		}
+
+		// Make sure load config is enabled
+		envvar = getenv("AWS_SDK_LOAD_CONFIG");
+		if (!envvar || strcmp(envvar, "1")) {
+			block = AttributedBlock("?!", 1);
+			aws_info.append(block);
+		}
+
+		environment.push_back(aws_info);
+
+	}
 	envvar = getenv("KUBECTL_CONTEXT");
 	std::string kube_context;
 	if (envvar) {
