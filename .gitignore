@@ -27,6 +27,8 @@
 *.out
 *.app
 
+prompt-info
+
 # Backup files
 *~
 \#*\#
@@ -38,3 +40,6 @@
 .sconf_temp/
 .sconsign.dblite
 config.log
+
+# Editor files
+.dir-locals.el
